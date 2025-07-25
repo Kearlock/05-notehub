@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Formik, Form, Field, ErrorMessage as FormikError } from "formik";
 import { object, string, mixed } from "yup";
 import css from "./NoteForm.module.css";
@@ -12,13 +13,13 @@ interface NoteFormProps {
   onCancel: () => void;
 }
 
-// interface NoteFormValues {
-//   title: string;
-//   content: string;
-//   tag: NoteTag;
-// }
+export interface NoteFormValues {
+  title: string;
+  content: string;
+  tag: NoteTag;
+}
 
-const initialValues: Note = {
+const initialValues: NoteFormValues = {
   title: "",
   content: "",
   tag: "Todo",
@@ -33,18 +34,23 @@ const validationSchema = object({
 });
 
 export default function NoteForm({ onCancel }: NoteFormProps) {
+  const [error, setError] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
-  const { mutate, isPending } = useMutation<Note, AxiosError<Error>, Note>({
+  const { mutate, isPending } = useMutation<
+    Note,
+    AxiosError<Error>,
+    NoteFormValues
+  >({
     mutationFn: createNote,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
       onCancel();
     },
-    onError: () => ErrorMessage(),
+    onError: () => setError("Failed to create note. Please try again."),
   });
 
-  const handleSubmit = (values: Note) => {
+  const handleSubmit = (values: NoteFormValues) => {
     mutate(values);
   };
 
@@ -56,6 +62,8 @@ export default function NoteForm({ onCancel }: NoteFormProps) {
     >
       {({ isSubmitting, isValid }) => (
         <Form className={css.form}>
+          {error && <ErrorMessage message={error} />}
+
           <div className={css.formGroup}>
             <label htmlFor="title">Title</label>
             <Field name="title" id="title" type="text" className={css.input} />
@@ -68,7 +76,7 @@ export default function NoteForm({ onCancel }: NoteFormProps) {
               as="textarea"
               name="content"
               id="content"
-              rows="8"
+              rows={8}
               className={css.textarea}
             />
             <FormikError

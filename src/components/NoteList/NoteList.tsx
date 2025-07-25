@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Note } from "../../types/note";
 import css from "./NoteList.module.css";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -8,6 +9,8 @@ interface NoteListProps {
   notes: Note[];
 }
 export default function NoteList({ notes }: NoteListProps) {
+  const [error, setError] = useState<string | null>(null);
+
   const queryClient = useQueryClient();
 
   const { mutate: handleDelete } = useMutation({
@@ -15,7 +18,7 @@ export default function NoteList({ notes }: NoteListProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
     },
-    onError: () => ErrorMessage(),
+    onError: () => setError("Failed to fetch notes. Please try again."),
   });
 
   return (
@@ -35,6 +38,8 @@ export default function NoteList({ notes }: NoteListProps) {
           </div>
         </li>
       ))}
+      {error && <ErrorMessage message={error} />}
+      {notes.length === 0 && <p className={css.empty}>No notes found.</p>}
     </ul>
   );
 }

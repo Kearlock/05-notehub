@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchNotes } from "../../services/noteService";
 import { useDebounce } from "use-debounce";
-// import type { Note } from "../../types/note";
 import css from "./App.module.css";
 import NoteList from "../NoteList/NoteList";
 import SearchBox from "../SearchBox/SearchBox";
@@ -59,7 +58,7 @@ export default function App() {
             Create note +
           </button>
         </header>
-        <ErrorMessage />
+        <ErrorMessage message="Failed to load notes. Please try again." />
         <button
           onClick={() => queryClient.invalidateQueries({ queryKey: ["notes"] })}
         >
